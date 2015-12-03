@@ -89,3 +89,10 @@ Once you have your .p12 files, upload them to Leanplum.
 ## Supported Platforms
 
 iOS, Android
+
+
+## Troubleshooting
+
+###Android
+
+* If you get the following build error: `Manifest merger failed : uses-sdk:minSdkVersion X cannot be smaller than version 13 declared in library [com.android.support:support-v13:23.1.1]`. You need to increase the value of the `minSdkVersion` property in your project's `AndroidManifest.xml` file to `13` 
