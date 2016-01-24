@@ -115,9 +115,7 @@
 
     self.callback = [options objectForKey:@"callback"];
 
-    UIUserNotificationType userNotificationTypes = [UIUserNotificationType Alert] | [UIUserNotificationType Badge] | [UIUserNotificationType Sound];
-    UIUserNotificationSettings settings = [UIUserNotificationSettings getSettingsForTypes:userNotificationTypes, null];
-    [[UIApplication sharedApplication] RegisterUserNotificationSettings:settings];
+    [[UIApplication sharedApplication] registerForRemoteNotificationTypes:notificationTypes];
 
 }
 
