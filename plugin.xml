@@ -38,7 +38,7 @@
     	<framework src="SystemConfiguration.framework"/>
     	<framework src="AdSupport.framework" weak="true"/>
     	<framework src="StoreKit.framework" weak="true"/>
-    	<framework src="lib/ios/LeanPlum.framework" custom="true" />
+    	<framework src="lib/ios/Leanplum.framework" custom="true" />
 
 		<header-file src="src/ios/CDVLeanPlum.h" />
 		<source-file src="src/ios/CDVLeanPlum.m" />
