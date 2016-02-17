@@ -17,11 +17,11 @@ Leanplum.prototype.start = function(successCallback, errorCallback, userId){
 	}
 };
 
-Leanplum.prototype.track = function(successCallback, errorCallback, name, data){
+Leanplum.prototype.track = function(name, data){
 	if (data === undefined) {
-		exec(successCallback, errorCallback, "Leanplum", "track", [name]);
+		exec(function(success){ }, function(error){}, "Leanplum", "track", [name]);
 	} else {
-		exec(successCallback, errorCallback, "Leanplum", "track", [name, data]);
+		exec(function(success){ }, function(error){}, "Leanplum", "track", [name, data]);
 	}
 };
 
@@ -35,4 +35,4 @@ Leanplum.prototype.unregisterPush = function(){
 
 if (typeof module != 'undefined' && module.exports) {
 	module.exports = new Leanplum();
-};
+}
