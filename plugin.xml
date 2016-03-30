@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="com.telerik.leanplum" version="2.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+<plugin id="com.telerik.leanplum" version="2.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
 
 	<name>Leanplum</name>
 
@@ -20,7 +20,7 @@
     <engines>
         <engine name="cordova-android" version=">=3.6.0"/>
         <engine name="cordova-plugman" version=">=4.2.0"/><!-- needed for gradleReference support -->
-    </engines>	
+    </engines>
 
 	<js-module name="Leanplum" src="www/LeanPlum.js">
 		<clobbers target="Leanplum" />
@@ -65,9 +65,7 @@
 	</platform>
 
 	<platform name="android">
-		<source-file src="src/android/res/values/leanplum.xml" target-dir="res/values" />
-
-		<config-file target="res/values/leanplum.xml" parent="/*">
+		<config-file target="res/values/strings.xml" parent="/*">
 			<string name="app_id">$APP_ID</string>
 			<string name="development_key">$DEVELOPMENT_KEY</string>
 			<string name="production_key">$PRODUCTION_KEY</string>
@@ -109,7 +107,7 @@
 
 		<source-file src="src/android/LeanplumPlugin.java"  target-dir="src/com/telerik/leanplum" />
 		<source-file src="src/android/CordovaGCMBroadcastReceiver.java"  target-dir="src/com/telerik/leanplum" />
-		
+
 	</platform>
 
 </plugin>
