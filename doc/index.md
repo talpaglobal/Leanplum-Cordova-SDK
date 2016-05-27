@@ -16,7 +16,7 @@ Although the object is in the global scope, it is not available until after the 
 
 You need to obtain the app ID, development and production keys to add the plugin in your app. Once done, use the following line to enable debugging in the following way:
 
-    LeanPlum.enableDebugging();
+    Leanplum.enableDebugging();
 
 
 Next, start LeanPlum in the following way:
