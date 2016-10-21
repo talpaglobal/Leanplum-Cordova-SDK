@@ -1,8 +1,8 @@
 //
 //  Leanplum.h
-//  Leanplum iOS SDK Version 1.3.9
+//  Leanplum iOS SDK Version 1.4.0.2
 //
-//  Copyright (c) 2015 Leanplum. All rights reserved.
+//  Copyright (c) 2016 Leanplum. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -82,10 +82,16 @@ name = [LPVar define:[@#name stringByReplacingOccurrencesOfString:@"_" withStrin
 #define LEANPLUM_USE_ADVERTISING_ID \
     _Pragma("clang diagnostic push") \
     _Pragma("clang diagnostic ignored \"-Warc-performSelector-leaks\"") \
-    [Leanplum setDeviceId:[[[NSClassFromString(@"ASIdentifierManager") \
-        performSelector:NSSelectorFromString(@"sharedManager")] \
-        performSelector:NSSelectorFromString(@"advertisingIdentifier")] \
-        performSelector:NSSelectorFromString(@"UUIDString")]] \
+    id LeanplumIdentifierManager = [NSClassFromString(@"ASIdentifierManager") \
+                            performSelector:NSSelectorFromString(@"sharedManager")]; \
+    if (floor(NSFoundationVersionNumber) <= 1299 /* NSFoundationVersionNumber_iOS_9_x_Max */ || \
+        [LeanplumIdentifierManager performSelector: \
+          NSSelectorFromString(@"isAdvertisingTrackingEnabled")]) { \
+        /* < iOS10 || isAdvertisingTrackingEnabled */ \
+        [Leanplum setDeviceId:[[LeanplumIdentifierManager performSelector: \
+                                NSSelectorFromString(@"advertisingIdentifier")] \
+                               performSelector:NSSelectorFromString(@"UUIDString")]]; \
+    } \
     _Pragma("clang diagnostic pop")
 
 @class LPActionContext;
@@ -360,17 +366,28 @@ typedef enum {
 /**
  * Handles a push notification for apps that use Background Notifications.
  * Without background notifications, Leanplum handles them automatically.
+ * Deprecated. Leanplum calls handleNotification automatically now. If you
+ * implement application:didReceiveRemoteNotification:fetchCompletionHandler:
+ * in your app delegate, you should remove any calls to [Leanplum handleNotification]
+ * and call the completion handler yourself.
  */
 + (void)handleNotification:(NSDictionary *)userInfo
-    fetchCompletionHandler:(LeanplumFetchCompletionBlock)completionHandler;
+    fetchCompletionHandler:(LeanplumFetchCompletionBlock)completionHandler
+    __attribute__((deprecated("Leanplum calls handleNotification automatically now. If you "
+        "implement application:didReceiveRemoteNotification:fetchCompletionHandler: in your app "
+        "delegate, you should remove any calls to [Leanplum handleNotification] and call the "
+        "completion handler yourself.")));
 
 #if LP_NOT_TV
 /**
  * Call this to handle custom actions for local notifications.
  */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 + (void)handleActionWithIdentifier:(NSString *)identifier
               forLocalNotification:(UILocalNotification *)notification
                  completionHandler:(void (^)())completionHandler;
+#pragma clang diagnostic pop
 #endif
 
 /**
@@ -454,7 +471,7 @@ typedef enum {
  * Advances to a particular state in your application. The string can be
  * any value of your choosing, and will show up in the dashboard.
  * A state is a section of your app that the user is currently in.
- * You can specify up to 50 types of parameters per app across all events and state.
+ * You can specify up to 200 types of parameters per app across all events and state.
  * The parameter keys must be strings, and values either strings or numbers.
  * @param state The name of the state.
  * @param params A dictionary with custom parameters.
@@ -465,9 +482,9 @@ typedef enum {
  * Advances to a particular state in your application. The string can be
  * any value of your choosing, and will show up in the dashboard.
  * A state is a section of your app that the user is currently in.
- * You can specify up to 50 types of parameters per app across all events and state.
+ * You can specify up to 200 types of parameters per app across all events and state.
  * The parameter keys must be strings, and values either strings or numbers.
- * @param state The name of the state.
+ * @param state The name of the state. (nullable)
  * @param info Anything else you want to log with the state. For example, if the state
  * is watchVideo, info could be the video ID.
  * @param params A dictionary with custom parameters.
@@ -808,5 +825,10 @@ typedef NS_ENUM(NSUInteger, LPTrackScreenMode) {
  * Prevents the currently active message from appearing again in the future.
  */
 - (void)muteFutureMessagesOfSameKind;
+
+/**
+ * Checks if the action context has any missing files that still need to be downloaded.
+ */
+- (BOOL)hasMissingFiles;
 
 @end
