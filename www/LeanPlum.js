@@ -26,7 +26,13 @@ Leanplum.prototype.track = function(name, data){
 };
 
 Leanplum.prototype.registerPush = function(options){
-	exec(function(success){ }, function(error){}, "Leanplum", "registerPush", [options]);
+	exec(function(success){
+	    console.info("Successfully registered device for push notifications");
+	    console.info(success);
+	}, function(error){
+	    console.warn("Failed to register device for push notifications");
+	    console.warn(error);
+	}, "Leanplum", "registerPush", [options]);
 };
 
 Leanplum.prototype.unregisterPush = function(){
