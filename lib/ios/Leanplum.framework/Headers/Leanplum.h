@@ -1,13 +1,29 @@
 //
 //  Leanplum.h
-//  Leanplum iOS SDK Version 1.4.0.2
+//  Leanplum iOS SDK Version 2.0.2
 //
-//  Copyright (c) 2016 Leanplum. All rights reserved.
+//  Copyright (c) 2012 Leanplum, Inc. All rights reserved.
 //
+//  Licensed to the Apache Software Foundation (ASF) under one
+//  or more contributor license agreements.  See the NOTICE file
+//  distributed with this work for additional information
+//  regarding copyright ownership.  The ASF licenses this file
+//  to you under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing,
+//  software distributed under the License is distributed on an
+//  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+//  KIND, either express or implied.  See the License for the
+//  specific language governing permissions and limitations
+//  under the License.
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "LPNewsfeed.h"
+#import "LPInbox.h"
 
 #ifndef LP_NOT_TV
 #define LP_NOT_TV (!defined(TARGET_OS_TV) || !TARGET_OS_TV)
@@ -108,15 +124,12 @@ name = [LPVar define:[@#name stringByReplacingOccurrencesOfString:@"_" withStrin
 typedef void (^LeanplumStartBlock)(BOOL success);
 typedef void (^LeanplumVariablesChangedBlock)();
 typedef void (^LeanplumInterfaceChangedBlock)();
+typedef void (^LeanplumSetLocationBlock)(BOOL success);
 // Returns whether the action was handled.
 typedef BOOL (^LeanplumActionBlock)(LPActionContext* context);
 typedef void (^LeanplumHandleNotificationBlock)();
 typedef void (^LeanplumShouldHandleNotificationBlock)(NSDictionary *userInfo, LeanplumHandleNotificationBlock response);
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 70000 && LP_NOT_TV
-typedef UIBackgroundFetchResult LeanplumUIBackgroundFetchResult;
-#else
-typedef int LeanplumUIBackgroundFetchResult;
-#endif
+typedef NSUInteger LeanplumUIBackgroundFetchResult; // UIBackgroundFetchResult
 typedef void (^LeanplumFetchCompletionBlock)(LeanplumUIBackgroundFetchResult result);
 typedef void (^LeanplumPushSetupBlock)();
 /**@}*/
@@ -216,12 +229,12 @@ typedef enum {
  * Needed in development mode to enable the interface editor, as well as in production to allow
  * changes to be applied.
  */
-+ (void)allowInterfaceEditing;
++ (void)allowInterfaceEditing __attribute__((deprecated("Use LeanplumUIEditor pod instead.")));
 
 /**
  * Check if interface editing is enabled.
  */
-+ (BOOL)interfaceEditingEnabled;
++ (BOOL)interfaceEditingEnabled __attribute__((deprecated("Use LeanplumUIEditor pod instead.")));
 
 /**@}*/
 
@@ -230,6 +243,14 @@ typedef enum {
  * By default, the device ID is the identifier for vendor.
  */
 + (void)setDeviceId:(NSString *)deviceId;
+
+/**
+ * By default, Leanplum reports the version of your app using CFBundleVersion, which
+ * can be used for reporting and targeting on the Leanplum dashboard.
+ * If you wish to use CFBundleShortVersionString or any other string as the version,
+ * you can call this before your call to [Leanplum start]
+ */
++ (void)setAppVersion:(NSString *)appVersion;
 
 /**
  * @{
@@ -573,6 +594,12 @@ typedef NS_ENUM(NSUInteger, LPTrackScreenMode) {
 + (NSArray *)variants;
 
 /**
+ * Returns metadata for all active in-app messages.
+ * Recommended only for debugging purposes and advanced use cases.
+ */
++ (NSDictionary *)messageMetadata;
+
+/**
  * Forces content to update from the server. If variables have changed, the
  * appropriate callbacks will fire. Use sparingly as if the app is updated,
  * you'll have to deal with potentially inconsistent state or user experience.
@@ -631,9 +658,56 @@ typedef NS_ENUM(NSUInteger, LPTrackScreenMode) {
 + (NSString *)userId;
 
 /**
- * Returns an instance to the singleton LPNewsfeed object.
+ * Returns an instance to the singleton LPInbox object.
  */
-+ (LPNewsfeed *)newsfeed;
++ (LPInbox *)inbox;
+
+/**
+ * Returns an instance to the singleton LPNewsfeed object.
+ * Deprecated. Use {@link inbox} instead.
+ */
++ (LPNewsfeed *)newsfeed __attribute__((deprecated("Use inbox instead.")));
+
+/**
+ * Types of location accuracy. Higher value implies better accuracy.
+ */
+typedef enum {
+    LPLocationAccuracyIP = 0,
+    LPLocationAccuracyCELL = 1,
+    LPLocationAccuracyGPS = 2
+} LPLocationAccuracyType;
+
+/**
+ * Set location manually. Calls setDeviceLocationWithLatitude:longitude:type: with cell type.
+ * Best if used in after calling setDeviceLocationWithLatitude:.
+ */
++ (void)setDeviceLocationWithLatitude:(double)latitude
+                            longitude:(double)longitude;
+
+/**
+ * Set location manually. Best if used in after calling setDeviceLocationWithLatitude:.
+ * Useful if you want to apply additional logic before sending in the location.
+ */
++ (void)setDeviceLocationWithLatitude:(double)latitude
+                            longitude:(double)longitude
+                                 type:(LPLocationAccuracyType)type;
+
+/**
+ * Set location manually. Best if used in after calling setDeviceLocationWithLatitude:.
+ * If you have the CLPlacemark info: city is locality, region is administrativeArea,
+ * and country is ISOcountryCode.
+ */
++ (void)setDeviceLocationWithLatitude:(double)latitude
+                            longitude:(double)longitude
+                                 city:(NSString *)city
+                               region:(NSString *)region
+                              country:(NSString *)country
+                                 type:(LPLocationAccuracyType)type;
+
+/**
+ * Disables collecting location automatically. Will do nothing if Leanplum-Location is not used.
+ */
++ (void)disableLocationCollection;
 
 @end
 
@@ -804,6 +878,7 @@ typedef NS_ENUM(NSUInteger, LPTrackScreenMode) {
 - (NSDictionary *)dictionaryNamed:(NSString *)name;
 - (NSArray *)arrayNamed:(NSString *)name;
 - (UIColor *)colorNamed:(NSString *)name;
+- (NSString *)htmlWithTemplateNamed:(NSString *)templateName;
 
 /**
  * Runs the action given by the "name" key.
@@ -820,6 +895,15 @@ typedef NS_ENUM(NSUInteger, LPTrackScreenMode) {
  * Tracks an event in the context of the current message.
  */
 - (void)track:(NSString *)event withValue:(double)value andParameters:(NSDictionary *)params;
+
+/**
+ * Tracks an event in the conext of the current message, with any parent actions prepended to the
+ * message event name.
+ */
+- (void)trackMessageEvent:(NSString *)event
+                withValue:(double)value
+                  andInfo:(NSString *)info
+            andParameters:(NSDictionary *)params;
 
 /**
  * Prevents the currently active message from appearing again in the future.
