@@ -42,13 +42,26 @@
 		<framework src="SystemConfiguration.framework"/>
 		<framework src="AdSupport.framework" weak="true"/>
 		<framework src="StoreKit.framework" weak="true"/>
-		<framework src="lib/ios/Leanplum.framework" custom="true" embed="true" />
+		<framework src="lib/ios/Leanplum.framework" custom="true" embed="true" compiler-flags="-ObjC -fobjc-arc"/>
 
 		<header-file src="src/ios/CDVLeanPlum.h" />
 		<source-file src="src/ios/CDVLeanPlum.m" />
 
 		<header-file src="src/ios/AppDelegate+notification.h" />
 		<source-file src="src/ios/AppDelegate+notification.m" />
+
+		<!-- ENABLE PUSH CAPABILITY -->
+		<config-file target="*-Info.plist" parent="UIBackgroundModes">
+			<array>
+			  <string>remote-notification</string>
+			</array>
+		</config-file>
+		<config-file parent="aps-environment" target="*/Entitlements-Debug.plist">
+		    <string>development</string>
+		</config-file>
+		<config-file parent="aps-environment" target="*/Entitlements-Release.plist">
+			<string>production</string>
+		</config-file>
 
 		<config-file target="*-Info.plist" parent="APP_ID">
 			<string>$APP_ID</string>
