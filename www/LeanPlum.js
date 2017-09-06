@@ -36,7 +36,13 @@ Leanplum.prototype.registerPush = function(options){
 };
 
 Leanplum.prototype.unregisterPush = function(){
-	exec(function(success){ }, function(error){}, "Leanplum", "unregisterPush", []);
+	exec(function(success){
+	    console.info("Successfully unregistered device for push notifications");
+	    console.info(success);
+	}, function(error){
+	    console.warn("Failed to unregister device for push notifications");
+	    console.warn(error);
+	}, "Leanplum", "unregisterPush", [options]);  
 };
 
 if (typeof module != 'undefined' && module.exports) {
